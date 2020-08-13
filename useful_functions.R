@@ -45,8 +45,9 @@ sq_pointsToArea <- function(df, coord1, coord2, shp) {
 #### GEOCODING ####
 geocodeAddress <- function(x, pc = FALSE) {
   urlpt1 <- "http://dev.virtualearth.net/REST/v1/Locations?culture=en-GB&addressLine="
-  urlpt2 <- "&userLocation=51.504360719046616,-0.12600176611298197&key=AmbO1l7vGnCAeg4vWolOAFsw5_W8PajuOIqeZQxjdGSbTbb_tczs-JhSEQo0joLt"
-  url <- paste0(urlpt1, x, urlpt2)
+  urlpt2 <- "&userLocation=51.504360719046616,-0.12600176611298197&key="
+  urlpt3 <- Sys.getenv('bing_key')
+  url <- paste0(urlpt1, x, urlpt2, urlpt3)
   bingResult <- jsonlite::fromJSON(URLencode(url))
   postcode <- bingResult$resourceSets$resources[[1]]$address$postalCode[1]
   lat <- bingResult$resourceSets$resources[[1]]$point[, 2][[1]][1]
@@ -57,7 +58,7 @@ geocodeAddress <- function(x, pc = FALSE) {
   if(pc == TRUE) {
     result <- data.frame(postcode, lat, lon, stringsAsFactors = FALSE)
   } else {
-    result <- data.frame(lat, lon, stringsAsFactors = FALSE)
+    result <- data.frame(lon, lat, stringsAsFactors = FALSE)
   }
   result
 }
@@ -65,8 +66,9 @@ geocodeAddress <- function(x, pc = FALSE) {
 geocodeCoordinates <- function(lat, lon) {
   urlpt1 <- "http://dev.virtualearth.net/REST/v1/Locations/"
   urlpt2 <- paste(lat, lon, sep = ",")
-  urlpt3 <- "?key=AmbO1l7vGnCAeg4vWolOAFsw5_W8PajuOIqeZQxjdGSbTbb_tczs-JhSEQo0joLt"
-  rgURL <- paste0(urlpt1, urlpt2, urlpt3)
+  urlpt3 <- "?key="
+  urlpt4 <- Sys.getenv('bing_key')
+  rgURL <- paste0(urlpt1, urlpt2, urlpt3, urlpt4)
   
   result <- jsonlite::fromJSON(rgURL)
   address <- result$resourceSets$resources[[1]]$address
@@ -215,7 +217,7 @@ charType <- function(x) {
   case_when(
     grepl("[a-z]", tolower(x)) == TRUE ~ "A",
     grepl("[0-9]", tolower(x)) == TRUE ~ "1",
-    grepl("\\W", tolower(x)) == TRUE ~ "-")
+    TRUE ~ x)
 }
 
 regexPattern <- function(x) {
